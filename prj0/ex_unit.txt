@@ -1,0 +1,24 @@
+#未完成，請自行補齊
+[unit_type]
+    id=Knight
+    hitpoints=58
+    movement_type=mounted
+    movement=8
+    cost=40
+    [attack]
+        name=sword
+        type=blade
+        range=melee
+        damage=8
+        number=4
+    [/attack]
+    [attack]
+        name=lance
+        type=pierce
+        range=melee
+        damage=14
+        number=2
+    [/attack]
+[/unit_type]
+
+

@@ -1,0 +1,26 @@
+#未完成，請自行補齊
+[movetype]
+        name=mounted
+        [movement_costs]
+            shallow_water=4
+            flat=1
+            sand=2
+            forest=3
+            castle=1
+        [/movement_costs]
+        [defense]
+            shallow_water=80
+            flat=60
+            sand=70
+            forest=70
+            castle=60
+        [/defense]
+        [resistance]
+            blade=80
+            pierce=120
+            impact=70
+            fire=100
+            cold=100
+            arcane=80
+        [/resistance]
+[/movetype]
