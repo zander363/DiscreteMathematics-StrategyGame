@@ -57,8 +57,8 @@ public class MapGenerator{
 		fr.close();
 		return list;
 	}
-	public static void saveMap()throws IOException {
-		FileWriter fw = new FileWriter("Map.txt");
+	public static void saveMap(String path)throws IOException {
+		FileWriter fw = new FileWriter(path);
 		BufferedWriter bw = new BufferedWriter(fw);
 		try{
 			for(int i=0; i< height;i++){
@@ -100,7 +100,6 @@ public class MapGenerator{
 		// terminate condition
 		if(n == N){
 			permutationID++;
-			print_map(solution);
 			if(permutationID == permutationNo){
 				return 1;
 			}
@@ -113,7 +112,7 @@ public class MapGenerator{
 
 			last_letter = set[i];
 			used[i] = true;
-			solution[i] = set[i];
+			solution[n] = set[i];
 			if(backtrack(n+1,N)==1) return 1;
 
 			used[i] = false;
@@ -161,9 +160,17 @@ public class MapGenerator{
 	}
 	public static void main(String args[]){
 		try{
+			String inputpath = null;
+			String outputpath = null;
+			for(int i = 0;i < args.length; i++){
+				if(new String("--inputpath").equals(args[i])) inputpath = args[i+1];
+				if(new String("--outputpath").equals(args[i])) outputpath = args[i+1];
+			}
+			if(inputpath==null) inputpath = "../prj0/ex_terrain.txt";
+			if(outputpath==null) outputpath = "map.txt";
 			ArrayList<Terrain> list = new ArrayList<Terrain>();
 			Scanner scanner = new Scanner(System.in);
-			list = MapGenerator.getFileContent("../prj0/ex_terrain.txt");
+			list = MapGenerator.getFileContent(inputpath);
 			int n = list.size();
 			while(width == 0){
 				System.out.printf("Input the width(1~20) : ");
@@ -272,7 +279,7 @@ public class MapGenerator{
 					case 'N':
 						continue;
 					default: 
-						saveMap();
+						saveMap(outputpath);
 				}
 				break;
 			}
