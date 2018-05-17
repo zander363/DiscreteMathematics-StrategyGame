@@ -9,6 +9,7 @@ package Action;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.concurrent.ConcurrentLinkedDeque;
 import java.io.FileReader;
 import java.io.BufferedReader;
 import java.io.FileWriter;
@@ -19,10 +20,10 @@ import Action.*;
 
 public class Checker
 {
-	public static void printMap(ArrayList<ArrayList<Character>> map){
-		for(ArrayList<Character> row: map){
-			for(char c: row){
-				System.out.printf("%c ",c);
+	public static void printMap(Coordinate[][] map){
+		for(int i=map[0].length-1;i>-1;i--){
+			for(int j=0;j<map.length;j++){
+				System.out.printf("%c ",map[j][i].sym);
 			}
 			System.out.println("");
 		}
@@ -46,18 +47,54 @@ public class Checker
 		}
 		return list;
 	}
-	
-	public BFS(Coordinate[][] map,int x,int y,int step){
-		ArrayList<Coordinate> visited = new ArrayList<Coordinate>();
-		queue = new queue();
-		int range = 0;
-		Coordinate last ;
-		Boolean change_last = true;
 
-		queue.enqueue(map[x][y]);
-		while(!queue.empty()){
-			current = queue.dequeue();
-			if(last.equal(current)){
+	public static void print_direct(){
+		System.out.println("4 3 2");
+		System.out.println("5 0 1");
+		System.out.println("6 7 8");
+		return ;
+	}
+
+	public static boolean enqueue(Coordinate[][] map,int x,int y,boolean change_last,
+			ArrayList<Coordinate> visited,ConcurrentLinkedDeque<Coordinate> queue){
+		Coordinate last = null;
+		if(map[x][y].sym!='#'&& !visited.contains(map[x][y])){
+			if(change_last){ 
+				last = map[x][y];change_last=false;
+				System.out.println("Detect a change last");
+			}
+			queue.offer(map[x][y]);
+		}
+		return change_last;
+	}
+	
+	public static ArrayList<Coordinate> BFS(Coordinate[][] map,int x,int y,int step){
+		ArrayList<Coordinate> visited = new ArrayList<Coordinate>();
+		ConcurrentLinkedDeque<Coordinate> queue = new ConcurrentLinkedDeque<Coordinate>();
+		int height = map[0].length;
+		int width = map.length;
+		int range = 0;
+		Coordinate last = null;
+		boolean change_last = true;
+		int[][] distance = new int[width][height];
+		for(int i=0;i<height;i++){
+			for(int j=0;j<width;j++){
+				distance[j][i] = -1;
+			}
+		}
+
+		System.out.printf("map.height = %d\n",map[0].length);
+		System.out.printf("map.width = %d\n",map.length);
+		System.out.printf("height = %d\n",height);
+		System.out.printf("width = %d\n",width);
+
+		queue.offer(map[x][y]);
+		while(!queue.isEmpty()){
+			Coordinate tmp = null;
+			Coordinate current = queue.poll();
+			visited.add(current);
+			distance[current.x][current.y] = range;
+			if(last!=null&&current.x == last.x && current.y == last.y){
 				range++;
 				if(range>step) break;
 				change_last = true;
@@ -65,67 +102,62 @@ public class Checker
 			int x_range = 0;
 			int y_range = 0;
 			if(current.x == 0) x_range = -1;
-			if(current.x == width) x_range = 1;
+			if(current.x == width-1) x_range = 1;
 			if(current.y == 0) y_range = -1;
-			if(current.y == width) y_range = 1;
-			if(y_range<1) 
-				if(map[x][y+1].sym!='#'&& !visited.contain(map[x][y+1])){
-					if(change_last){ 
-						last = map[x][y+1];change_last=false;
-					}
-					queue.enqueue(map[x][y+1]);
-				}
-			if(x_range<1){ 
-				if(map[x][y+1].sym!='#'&& !visited.contain(map[x][y+1])){
-					if(change_last){ 
-						last = map[x][y+1];change_last=false;
-					}
-					queue.enqueue(map[x+1][y]);
+			if(current.y == height-1) y_range = 1;
+			if(y_range<1) change_last = enqueue(map,x,y+1,change_last,visited,queue);
+			if(x_range<1) change_last = enqueue(map,x+1,y,change_last,visited,queue);
+			if(y_range>-1) change_last = enqueue(map,x,y-1,change_last,visited,queue);
+			if(x_range>-1) change_last = enqueue(map,x-1,y,change_last,visited,queue);
+			if(y_range==1){
+				if(x_range==1) change_last = enqueue(map,x-1,y-1,change_last,visited,queue);
+				else if(x_range==-1) change_last = enqueue(map,x+1,y-1,change_last,visited,queue);
+				else{
+					change_last = enqueue(map,x-1,y-1,change_last,visited,queue);
+					change_last = enqueue(map,x+1,y-1,change_last,visited,queue);
 				}
 			}
-			if(y_range>-1)
-				if(map[x][y+1].sym!='#'&& !visited.contain(map[x][y+1])){
-					if(change_last){ 
-						last = map[x][y+1];change_last=false;
-					}
-					queue.enqueue(map[x][y-1]);
+			else if(y_range==-1){
+				if(x_range==1) change_last = enqueue(map,x-1,y+1,change_last,visited,queue);
+				else if(x_range==-1) change_last = enqueue(map,x+1,y+1,change_last,visited,queue);
+				else{
+					change_last = enqueue(map,x-1,y+1,change_last,visited,queue);
+					change_last = enqueue(map,x+1,y+1,change_last,visited,queue);
 				}
-			if(y_range>-1)
-				if(map[x][y+1].sym!='#'&& !visited.contain(map[x][y+1])){
-					if(change_last){ 
-						last = map[x][y+1];change_last=false;
-					}
-					 queue.enqueue(map[x][y-1]);
+			}
+			else{ 
+				if(x_range==1){
+					change_last = enqueue(map,x-1,y-1,change_last,visited,queue);
+					change_last = enqueue(map,x-1,y+1,change_last,visited,queue);
 				}
-			if(y_range==1)
-				if(x_range==1)
-					queue.enqueue(map[x-1][y-1]);
-				else if(x_range==-1)
-					queue.enqueue(map[x+1][y-1]);
-				else
-					queue.enqueue(map[x-1][y-1]);
-					queue.enqueue(map[x+1][y-1]);
-			else if(y_range==-1)
-				if(x_range==1)
-					queue.enqueue(map[x-1][y+1]);
-				else if(x_range==-1)
-					queue.enqueue(map[x+1][y+1]);
-				else
-					queue.enqueue(map[x-1][y+1]);
-					queue.enqueue(map[x+1][y+1]);
-			else 
-				if(x_range==1)
-					queue.enqueue(map[x-1][y-1]);
-					queue.enqueue(map[x-1][y+1]);
-				else if(x_range==-1)
-					queue.enqueue(map[x+1][y-1]);
-					queue.enqueue(map[x+1][y+1]);
-				else
-					queue.enqueue(map[x-1][y-1]);
-					queue.enqueue(map[x+1][y-1]);
-					queue.enqueue(map[x-1][y+1]);
-					queue.enqueue(map[x+1][y+1]);
+				else if(x_range==-1){ 
+					change_last = enqueue(map,x+1,y-1,change_last,visited,queue);
+					change_last = enqueue(map,x+1,y+1,change_last,visited,queue);
+				}
+				else{
+					change_last = enqueue(map,x-1,y-1,change_last,visited,queue);
+					change_last = enqueue(map,x+1,y-1,change_last,visited,queue);
+					change_last = enqueue(map,x-1,y+1,change_last,visited,queue);
+					change_last = enqueue(map,x+1,y+1,change_last,visited,queue);
+				}
+			}
 		}
+
+
+		for(int i=height-1;i>-1;i--){
+			for(int j=0;j<width;j++){
+				System.out.printf("%c",map[j][i].sym);
+				System.out.printf("%c",map[j][i].unit_cate);
+				if(distance[j][i]!=-1){
+					System.out.printf("%d",distance[j][i]);
+				}else{
+					System.out.printf(" ");
+				}
+				System.out.printf(" ");
+			}
+			System.out.println("");
+		}
+		return visited;
 	}
 
 	public static Coordinate move(int x, int y, ArrayList<Character> sequence){
@@ -179,19 +211,20 @@ public class Checker
 
 		int amount = 0;
 		int price = 500; // I assign it; TODO: should have some specific value
+		System.out.printf("please assign the path of map file : ");
 		Scanner scanner = new Scanner(System.in);
 		
 		ArrayList<ArrayList<Character>> map_tmp = readMap(scanner.next());
-		printMap(map_tmp);
 		int height = map_tmp.size();
 		int width = map_tmp.get(0).size();
-		Coordinate[][] map = new Coordinate[height][width];
-		for(int i=0,i<height;i++){
-			ArrayList<Character> list = map_tmp.get(height-i-1);
+		Coordinate[][] map = new Coordinate[width][height];
+		for(int i=0;i<height;i++){
+			ArrayList<Character> row = map_tmp.get(height-i-1);
 			for(int j=0;j<width;j++){
-				map[i][j] = new Coordinate(i,j,list.get(j),' ',-1)
+				map[j][i] = new Coordinate(j,i,row.get(j),' ',-1);
 			}
 		}
+		printMap(map);
 
 		System.out.print("How much initial amount it should be? ");
 		while(amount <= 0){
@@ -210,7 +243,7 @@ public class Checker
 			String name = u.getValue().id;
 			char sym = u.getValue().sym;
 			for(int i=0;i<num;i++){
-				System.out.printf("please assign a coordinate for No% %s:\n",i+1,u.getValue().id);
+				System.out.printf("please assign a coordinate for %s-%d:\n",u.getValue().id,i+1);
 				int x = -1;
 				int y = -1;
 				do{
@@ -222,7 +255,7 @@ public class Checker
 					do{
 						y = scanner.nextInt();
 					}while(y<0||y>=height);
-				}while(map[x][y].valid());
+				}while(!map[x][y].valid());
 				unit_state.add(new Unit_state(sym,unit_dict.get(name),x,y,100.0));
 				map[x][y].unit_cate=sym;
 				map[x][y].unit_id=unit_counter;
@@ -237,15 +270,17 @@ public class Checker
 
 		for(Unit_state u : unit_state){
 			ArrayList<Coordinate> avail = BFS(map,u.x,u.y,u.cate.movement);
-			System.out.println("You can move this unit as plot illustrated");
+			System.out.printf("You can move this unit %d steps as plot illustrated\n",u.cate.movement);
 			print_direct();
+			System.out.println(avail.size());
 			while(true){
-				String = scanner.next();
+				String string = scanner.next();
 
-				ArrayList<char> move_sequence = new ArrayList();
-				for(char c : string){
+				ArrayList<Character> move_sequence = new ArrayList<Character>();
+				for(int i=0;i<string.length();i++){
+					char c = string.charAt(i);
 					if(c==' ')continue;
-					if(!isDigit(c)) continue;
+					if(!Character.isDigit(c)) continue;
 					if(c=='9')continue;
 					move_sequence.add(c);
 				}
@@ -262,20 +297,20 @@ public class Checker
 					System.out.printf("out of bound at y\n");
 					continue;
 				}
+				if(position.x==u.x&&position.y==u.y)break;
 				position = map[position.x][position.y];
 				if(!position.valid()){
 					System.out.printf("wrong destination\n");
 					continue;
 				}
-				//move it
+				if(!avail.contains(position)){
+					System.out.printf("Unreachable destination\n");
+					continue;
+				}
 				
 				break;
 			}
-
-
 		}
-
-
 		System.out.println("compile OK");
 	}
 }

@@ -12,9 +12,9 @@ public class Unit_state
 	Unit cate;
 	int x;
 	int y;
-	float HP;
+	double HP;
 
-	public Unit_state(char unit_cate, Unit cate,int x,int y,float HP) {
+	public Unit_state(char unit_cate, Unit cate,int x,int y,double HP) {
 		this.unit_cate = unit_cate;
 		this.cate = cate;
 		this.x = x;

@@ -17,6 +17,7 @@ public class Coordinate
 	public Coordinate(int x,int y,char sym,char unit_cate,int unit_id) {
 		this.x = x;
 		this.y = y;
+		this.sym = sym;
 		this.unit_cate = unit_cate;
 		this.unit_id = unit_id;
 	}
