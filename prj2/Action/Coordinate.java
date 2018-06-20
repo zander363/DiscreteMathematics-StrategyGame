@@ -22,6 +22,15 @@ public class Coordinate
 		this.unit_id = unit_id;
 	}
 
+	public void exchange(Coordinate co2){
+		char tmp_cate = co2.unit_cate;
+		int tmp_id = co2.unit_id;
+		co2.unit_cate = this.unit_cate;
+		co2.unit_id = this.unit_id;
+		this.unit_cate = tmp_cate;
+		this.unit_id = tmp_id;
+		return;
+	}
 	public Boolean valid(){
 		if(this.sym=='#') return false;
 		if(this.unit_id >= 0) return false;

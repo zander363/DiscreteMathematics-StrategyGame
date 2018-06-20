@@ -21,14 +21,16 @@ public class Unit
 	int hit;
 	Movement move_type;
 	int movement;
+	int cost;
 	ArrayList<Attack> attacks;
 
-	public Unit(String id, char sym, int hit,Movement move_type,int movement,ArrayList<Attack> attacks) {
+	public Unit(String id, char sym, int hit,Movement move_type,int movement, int cost,ArrayList<Attack> attacks) {
 		this.id = id;
 		this.sym = sym;
 		this.hit = hit;
 		this.move_type = move_type;
 		this.movement = movement;
+		this.cost = cost;
 		this.attacks = attacks;
 	}
 
@@ -44,6 +46,7 @@ public class Unit
 				int hit = 0;
 				Movement move_type = null;
 				int movement = 0;
+				int cost = 0;
 				ArrayList<Attack> attacks = new ArrayList<Attack>();
 				while(!(new String("[/unit_type]").equals(string = br.readLine().trim()))){
 					String[] attribute = string.split("=");
@@ -51,6 +54,7 @@ public class Unit
 					if(new String("hitpoints").equals(attribute[0])) hit = Integer.parseInt(attribute[1]);
 					if(new String("movement_type").equals(attribute[0])) move_type = move_dict.get(attribute[1]);  
 					if(new String("movement").equals(attribute[0])) movement = Integer.parseInt(attribute[1]);
+					if(new String("cost").equals(attribute[0])) cost = Integer.parseInt(attribute[1]);
 					if(new String("[attack]").equals(string)){
 						String a_name = null;
 						Type a_type = null;
@@ -58,19 +62,20 @@ public class Unit
 						int a_damage = 0;
 						int a_number = 0;
 						while(!(new String("[/attack]").equals(string = br.readLine().trim()))){
-							if(new String("name").equals(attribute[0])) a_name = attribute[1]; 
-							if(new String("type").equals(attribute[0])) a_type = type_dict.get(attribute[1]);
-							if(new String("range").equals(attribute[0])){
-								if(new String("ranged").equals(attribute[1])) a_range = true;
+							String[] a_attribute = string.split("=");
+							if(new String("name").equals(a_attribute[0])) a_name = a_attribute[1]; 
+							if(new String("type").equals(a_attribute[0])) a_type = type_dict.get(a_attribute[1]);
+							if(new String("range").equals(a_attribute[0])){
+								if(new String("ranged").equals(a_attribute[1])) a_range = true;
 								else a_range = false;
 							}
-							if(new String("damage").equals(attribute[0])) a_damage = Integer.parseInt(attribute[1]); 
-							if(new String("number").equals(attribute[0])) a_number = Integer.parseInt(attribute[1]); 
+							if(new String("damage").equals(a_attribute[0])) a_damage = Integer.parseInt(a_attribute[1]); 
+							if(new String("number").equals(a_attribute[0])) a_number = Integer.parseInt(a_attribute[1]); 
 						}
 						attacks.add(new Attack(a_name, a_type, a_range, a_damage, a_number));
 					}
 				}
-				units.put(id,new Unit(id,sym,hit,move_type,movement,attacks)); 
+				units.put(id,new Unit(id,sym,hit,move_type,movement,cost,attacks)); 
 				sym++;
 			}
 		}

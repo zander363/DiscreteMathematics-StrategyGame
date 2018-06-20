@@ -26,6 +26,7 @@ public class Terrain{
 		this.symbol = symbol;
 	}
 
+	// TODO: to change this method to build a Map which key is sym and value is a Terrain class
 	public static ArrayList<Terrain> getFileContent(String path)throws IOException {
 		FileReader fr = new FileReader(path);
 		BufferedReader br = new BufferedReader(fr);

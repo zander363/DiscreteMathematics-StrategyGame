@@ -29,10 +29,17 @@ public class Checker
 		}
 		return;
 	}
+	public static void printFullMap(Coordinate[][] map){
+		for(int i=map[0].length-1;i>-1;i--){
+			for(int j=0;j<map.length;j++){
+				System.out.printf("%c%c ",map[j][i].sym,map[j][i].unit_cate);
+			}
+			System.out.println("");
+		}
+		return;
+	}
 
 	public static ArrayList<ArrayList<Character>> readMap(String path)throws IOException {
-		int width=0;
-		int height=0;
 		FileReader fr = new FileReader(path);
 		BufferedReader br = new BufferedReader(fr);
 		ArrayList<ArrayList<Character>> list = new ArrayList<ArrayList<Character>>();
@@ -45,6 +52,7 @@ public class Checker
 			}
 			list.add(row);
 		}
+		br.close();
 		return list;
 	}
 
@@ -55,26 +63,28 @@ public class Checker
 		return ;
 	}
 
-	public static boolean enqueue(Coordinate[][] map,int x,int y,boolean change_last,
+	public static Coordinate enqueue(Coordinate[][] map,int x,int y,boolean change_last,
 			ArrayList<Coordinate> visited,ConcurrentLinkedDeque<Coordinate> queue){
 		Coordinate last = null;
 		if(map[x][y].sym!='#'&& !visited.contains(map[x][y])){
 			if(change_last){ 
 				last = map[x][y];change_last=false;
-				System.out.println("Detect a change last");
 			}
 			queue.offer(map[x][y]);
+			visited.add(map[x][y]);
 		}
-		return change_last;
+		//return change_last;
+		return last;
 	}
 	
 	public static ArrayList<Coordinate> BFS(Coordinate[][] map,int x,int y,int step){
 		ArrayList<Coordinate> visited = new ArrayList<Coordinate>();
+		//ArrayList<Integer> visited = new ArrayList<Integer>();
 		ConcurrentLinkedDeque<Coordinate> queue = new ConcurrentLinkedDeque<Coordinate>();
 		int height = map[0].length;
 		int width = map.length;
 		int range = 0;
-		Coordinate last = null;
+		Coordinate last = map[x][y];
 		boolean change_last = true;
 		int[][] distance = new int[width][height];
 		for(int i=0;i<height;i++){
@@ -89,13 +99,17 @@ public class Checker
 		System.out.printf("width = %d\n",width);
 
 		queue.offer(map[x][y]);
+		visited.add(map[x][y]);
 		while(!queue.isEmpty()){
+			System.out.println(queue.size());
 			Coordinate tmp = null;
 			Coordinate current = queue.poll();
-			visited.add(current);
+			//visited.add(x*height+y);
 			distance[current.x][current.y] = range;
+			System.out.printf("x:%d,y:%d\n",last.x,last.y);
 			if(last!=null&&current.x == last.x && current.y == last.y){
 				range++;
+				System.out.println(range);
 				if(range>step) break;
 				change_last = true;
 			}
@@ -105,40 +119,178 @@ public class Checker
 			if(current.x == width-1) x_range = 1;
 			if(current.y == 0) y_range = -1;
 			if(current.y == height-1) y_range = 1;
-			if(y_range<1) change_last = enqueue(map,x,y+1,change_last,visited,queue);
-			if(x_range<1) change_last = enqueue(map,x+1,y,change_last,visited,queue);
-			if(y_range>-1) change_last = enqueue(map,x,y-1,change_last,visited,queue);
-			if(x_range>-1) change_last = enqueue(map,x-1,y,change_last,visited,queue);
+			//if((tmp = enqueue(map,x,y,change_last,visited,queue))!=null){
+			//	last=tmp;queue.offer(tmp);
+			if(y_range<1){
+				if(map[x][y+1].sym!='#'&& !visited.contains(map[x][y+1])){
+					if(change_last){ 
+						last = map[x][y+1];change_last=false;
+					}
+					queue.offer(map[x][y+1]);
+					visited.add(map[x][y+1]);
+				}
+			}
+			if(x_range<1){
+				if(map[x+1][y].sym!='#'&& !visited.contains(map[x+1][y])){
+					if(change_last){ 
+						last = map[x+1][y];change_last=false;
+					}
+					queue.offer(map[x+1][y]);
+					visited.add(map[x+1][y]);
+				}
+			}
+			if(y_range>-1) {
+				if(map[x][y-1].sym!='#'&& !visited.contains(map[x][y-1])){
+					if(change_last){ 
+						last = map[x][y-1];change_last=false;
+					}
+					queue.offer(map[x][y-1]);
+					visited.add(map[x][y-1]);
+				}
+			}
+			if(x_range>-1){
+				if(map[x-1][y].sym!='#'&& !visited.contains(map[x-1][y])){
+					if(change_last){ 
+						last = map[x-1][y];change_last=false;
+					}
+					queue.offer(map[x-1][y]);
+					visited.add(map[x-1][y]);
+				}
+			}
 			if(y_range==1){
-				if(x_range==1) change_last = enqueue(map,x-1,y-1,change_last,visited,queue);
-				else if(x_range==-1) change_last = enqueue(map,x+1,y-1,change_last,visited,queue);
+				if(x_range==1) {
+					if(map[x-1][y-1].sym!='#'&& !visited.contains(map[x-1][y-1])){
+						if(change_last){ 
+							last = map[x-1][y-1];change_last=false;
+						}
+						queue.offer(map[x-1][y-1]);
+						visited.add(map[x-1][y-1]);
+					}
+				}
+				else if(x_range==-1){
+					if(map[x+1][y-1].sym!='#'&& !visited.contains(map[x+1][y-1])){
+						if(change_last){ 
+							last = map[x+1][y-1];change_last=false;
+						}
+						queue.offer(map[x+1][y-1]);
+						visited.add(map[x+1][y-1]);
+					}
+				}
 				else{
-					change_last = enqueue(map,x-1,y-1,change_last,visited,queue);
-					change_last = enqueue(map,x+1,y-1,change_last,visited,queue);
+					if(map[x-1][y-1].sym!='#'&& !visited.contains(map[x-1][y-1])){
+						if(change_last){ 
+							last = map[x-1][y-1];change_last=false;
+						}
+						queue.offer(map[x-1][y-1]);
+						visited.add(map[x-1][y-1]);
+					}
+					if(map[x+1][y-1].sym!='#'&& !visited.contains(map[x+1][y-1])){
+						if(change_last){ 
+							last = map[x+1][y-1];change_last=false;
+						}
+						queue.offer(map[x+1][y-1]);
+						visited.add(map[x+1][y-1]);
+					}
 				}
 			}
 			else if(y_range==-1){
-				if(x_range==1) change_last = enqueue(map,x-1,y+1,change_last,visited,queue);
-				else if(x_range==-1) change_last = enqueue(map,x+1,y+1,change_last,visited,queue);
+				if(x_range==1){
+					if(map[x-1][y+1].sym!='#'&& !visited.contains(map[x-1][y+1])){
+						if(change_last){ 
+							last = map[x-1][y+1];change_last=false;
+						}
+						queue.offer(map[x-1][y+1]);
+						visited.add(map[x-1][y+1]);
+					}
+				}
+				else if(x_range==-1){
+					if(map[x+1][y+1].sym!='#'&& !visited.contains(map[x+1][y+1])){
+						if(change_last){ 
+							last = map[x+1][y+1];change_last=false;
+						}
+						queue.offer(map[x+1][y+1]);
+						visited.add(map[x+1][y+1]);
+					}
+				}
 				else{
-					change_last = enqueue(map,x-1,y+1,change_last,visited,queue);
-					change_last = enqueue(map,x+1,y+1,change_last,visited,queue);
+					if(map[x-1][y+1].sym!='#'&& !visited.contains(map[x-1][y+1])){
+						if(change_last){ 
+							last = map[x-1][y+1];change_last=false;
+						}
+						queue.offer(map[x-1][y+1]);
+						visited.add(map[x-1][y+1]);
+					}
+					if(map[x+1][y+1].sym!='#'&& !visited.contains(map[x+1][y+1])){
+						if(change_last){ 
+							last = map[x+1][y+1];change_last=false;
+						}
+						queue.offer(map[x+1][y+1]);
+						visited.add(map[x+1][y+1]);
+					}
 				}
 			}
 			else{ 
 				if(x_range==1){
-					change_last = enqueue(map,x-1,y-1,change_last,visited,queue);
-					change_last = enqueue(map,x-1,y+1,change_last,visited,queue);
+					if(map[x-1][y-1].sym!='#'&& !visited.contains(map[x-1][y-1])){
+						if(change_last){ 
+							last = map[x-1][y-1];change_last=false;
+						}
+						queue.offer(map[x-1][y-1]);
+						visited.add(map[x-1][y-1]);
+					}
+					if(map[x-1][y+1].sym!='#'&& !visited.contains(map[x-1][y+1])){
+						if(change_last){ 
+							last = map[x-1][y+1];change_last=false;
+						}
+						queue.offer(map[x-1][y+1]);
+						visited.add(map[x-1][y+1]);
+					}
 				}
 				else if(x_range==-1){ 
-					change_last = enqueue(map,x+1,y-1,change_last,visited,queue);
-					change_last = enqueue(map,x+1,y+1,change_last,visited,queue);
+					if(map[x+1][y-1].sym!='#'&& !visited.contains(map[x+1][y-1])){
+						if(change_last){ 
+							last = map[x+1][y-1];change_last=false;
+						}
+						queue.offer(map[x+1][y-1]);
+						visited.add(map[x+1][y-1]);
+					}
+					if(map[x+1][y+1].sym!='#'&& !visited.contains(map[x+1][y+1])){
+						if(change_last){ 
+							last = map[x+1][y+1];change_last=false;
+						}
+						queue.offer(map[x+1][y+1]);
+						visited.add(map[x+1][y+1]);
+					}
 				}
 				else{
-					change_last = enqueue(map,x-1,y-1,change_last,visited,queue);
-					change_last = enqueue(map,x+1,y-1,change_last,visited,queue);
-					change_last = enqueue(map,x-1,y+1,change_last,visited,queue);
-					change_last = enqueue(map,x+1,y+1,change_last,visited,queue);
+					if(map[x-1][y-1].sym!='#'&& !visited.contains(map[x-1][y-1])){
+						if(change_last){ 
+							last = map[x-1][y-1];change_last=false;
+						}
+						queue.offer(map[x-1][y-1]);
+						visited.add(map[x-1][y-1]);
+					}
+					if(map[x+1][y-1].sym!='#'&& !visited.contains(map[x+1][y-1])){
+						if(change_last){ 
+							last = map[x+1][y-1];change_last=false;
+						}
+						queue.offer(map[x+1][y-1]);
+						visited.add(map[x+1][y-1]);
+					}
+					if(map[x-1][y+1].sym!='#'&& !visited.contains(map[x-1][y+1])){
+						if(change_last){ 
+							last = map[x-1][y+1];change_last=false;
+						}
+						queue.offer(map[x-1][y+1]);
+						visited.add(map[x-1][y+1]);
+					}
+					if(map[x+1][y+1].sym!='#'&& !visited.contains(map[x+1][y+1])){
+						if(change_last){ 
+							last = map[x+1][y+1];change_last=false;
+						}
+						queue.offer(map[x+1][y+1]);
+						visited.add(map[x+1][y+1]);
+					}
 				}
 			}
 		}
@@ -210,7 +362,6 @@ public class Checker
 		System.out.printf("unit_dict size : %d\n",unit_dict.size());
 
 		int amount = 0;
-		int price = 500; // I assign it; TODO: should have some specific value
 		System.out.printf("please assign the path of map file : ");
 		Scanner scanner = new Scanner(System.in);
 		
@@ -218,6 +369,7 @@ public class Checker
 		int height = map_tmp.size();
 		int width = map_tmp.get(0).size();
 		Coordinate[][] map = new Coordinate[width][height];
+            map = new Coordinate[width][height];
 		for(int i=0;i<height;i++){
 			ArrayList<Character> row = map_tmp.get(height-i-1);
 			for(int j=0;j<width;j++){
@@ -236,7 +388,9 @@ public class Checker
 		ArrayList<Unit_state> unit_state = new ArrayList<Unit_state>();
 		for(Map.Entry<String,Unit> u: unit_dict.entrySet()){
 			int unit_counter = 0;
-			System.out.printf("Now, you have $%d. How many %s do you want? ",amount,u.getValue().id);
+			int price = u.getValue().cost;
+			System.out.printf("Now, you have $%d. How many %s do you want?\n(every %s need $%d)",
+				amount,u.getValue().id,u.getValue().id,price);
 			do{
 				num = scanner.nextInt();
 			}while(amount-num*price<0);
@@ -307,10 +461,13 @@ public class Checker
 					System.out.printf("Unreachable destination\n");
 					continue;
 				}
+				position.exchange(map[u.x][u.y]);
+
+				printFullMap(map);
 				
 				break;
 			}
 		}
-		System.out.println("compile OK");
+		//System.out.println("compile OK");
 	}
 }
