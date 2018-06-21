@@ -358,7 +358,8 @@ public class Checker
 		System.out.printf("terr_list size : %d\n",terr_list.size());
 		HashMap<String,Movement> move_dict = Movement.getFileContent("../prj0/ex_move.txt");
 		System.out.printf("move_dict size : %d\n",move_dict.size());
-		HashMap<String,Unit> unit_dict = Unit.getFileContent("../prj0/ex_unit.txt",type_dict,move_dict);
+		//HashMap<String,Unit> unit_dict = Unit.getFileContent("../prj0/ex_unit.txt",type_dict,move_dict);
+		HashMap<Character, Unit> unit_dict = Unit.getFileContent(workspace + "/ex_unit.txt", type_dict, move_dict);
 		System.out.printf("unit_dict size : %d\n",unit_dict.size());
 
 		int amount = 0;

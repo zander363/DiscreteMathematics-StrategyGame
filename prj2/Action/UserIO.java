@@ -53,10 +53,44 @@ public class UserIO{
     /*
     public void read_map();
     public static void read_state();
-    public static void write_state();
     public static void read_move();
     public static void write_move();
     */
+    public static void write_state(Arraylist<Unit_state> states, String path)throws IOException {
+		FileWriter fw = new FileWriter(path);
+		BufferedWriter bw = new BufferedWriter(fw);
+        int counter = 0;
+		try{
+            for(Unit_state state: states){
+                bw.write(Interger.toString(counter)+','+state.unit_cate+','+state.x+','+state.y+','+state.HP+'\n');
+            }
+			bw.flush();
+		}catch(IOException ioe){
+			throw ioe;
+		}finally{
+			bw.close();      
+		}    
+    }
+
+    public static void write_move(Move_seq moveSequence)throws IOException{
+		FileWriter fw = new FileWriter(path);
+		BufferedWriter bw = new BufferedWriter(fw);
+        int counter = 0;
+		try{
+            for(Unit_state state: states){
+                bw.write(Interger.toString(counter)+','+state.unit_cate+','+state.x+','+state.y+','+state.HP+'\n');
+            }
+		}catch(IOException ioe){
+			throw ioe;
+		}finally{
+			bw.close();      
+		}    
+    }
+
+    public static Boolean all_dead(ArrayList<Unit_state> states){
+        for(Unit_state state : states) if(state.HP > 0.0) return false; 
+        return true;
+    }
 
     public static void main(String args[]){
         try{
@@ -80,7 +114,7 @@ public class UserIO{
             System.out.printf("terr_list size : %d\n",terr_list.size());
             HashMap<String,Movement> move_dict = Movement.getFileContent(workspace+"/ex_move.txt");
             System.out.printf("move_dict size : %d\n",move_dict.size());
-            HashMap<String,Unit> unit_dict = Unit.getFileContent(workspace+"/ex_unit.txt",type_dict,move_dict);
+            HashMap<Character,Unit> unit_dict = Unit.getFileContent(workspace+"/ex_unit.txt",type_dict,move_dict);
             System.out.printf("unit_dict size : %d\n",unit_dict.size());
 
             Scanner scanner = new Scanner(System.in);
@@ -156,44 +190,48 @@ public class UserIO{
                 }
             }
 
-            
+
 		    int amount = 0;
             while(amount <= 0){
-                System.out.printf("Initialize the initial money : ");
+                System.out.printf("set the initial money : ");
                 amount = scanner.nextInt();
             }
             int num = 0;
 
             /*
             */
-            int cost_Mage = 0;
-            int cost_Poacher = 0;
-            for(Map.Entry<String,Unit> u: unit_dict.entrySet()){
+            int cost_Dark = 0;
+            int cost_Thug = 0;
+            for(Map.Entry<Character,Unit> u: unit_dict.entrySet()){
                 Unit unit = u.getValue();
-                if(new String("Mage").equals(unit.name)){
-                    cost_Mage = unit.cost;
+                if(new String("Dark Adept").equals(unit.id)){
+                    cost_Dark = unit.cost;
                 }
-                if(new String("Poacher").equals(unit.name)){
-                    cost_Poacher = unit.cost;
+                if(new String("Thug").equals(unit.id)){
+                    cost_Thug = unit.cost;
                 }
-                /*
+            
                 System.out.printf("id: %s (%c), hp = %d, move_type: %s, cost:%d\n"
                         ,unit.id,unit.sym,unit.hit,unit.move_type.name,unit.cost);
                 for(Attack a:unit.attacks){
                     System.out.printf(" %s : %d *%d @%s\n",a.name,a.damage,a.number,a.range);
                 }
                 System.out.println("");
-                */
             }
 
 
             //esitmate the number of my unit
-            int budget_Mage = (amount*2/5)/cost_Mage;
-            int esti_Poacher = (amount*3/5)/cost_Poacher;
-
+            int esti_Dark = (amount*2/5)/cost_Dark;
+            int esti_Thug = (amount - esti_Dark*cost_Dark)/cost_Thug;
+            if((amount - esti_Thug*cost_Thug - esti_Dark*cost_Dark ) >= (cost_Dark - cost_Thug)){
+                esti_Dark++;esti_Thug--;
+            }
+            System.out.printf("esti_Dark: %d, esti_Thug: %d\n", esti_Dark,esti_Thug);
+            System.out.printf("sum_Dark: %d, sum_Thug: %d\n", esti_Dark*cost_Dark,esti_Thug*cost_Thug);
 
             ArrayList<Unit_state> unit_state = new ArrayList<Unit_state>();
-            for(Map.Entry<String,Unit> u: unit_dict.entrySet()){
+            /*
+            for(Map.Entry<Character,Unit> u: unit_dict.entrySet()){
                 int unit_counter = 0;
                 int price = u.getValue().cost;
                 System.out.printf("Now, you have $%d. How many %s do you want?\n(every %s need $%d)",
@@ -217,12 +255,114 @@ public class UserIO{
                             y = scanner.nextInt();
                         }while(y<0||y>=height);
                     }while(!map[x][y].valid());
-                    unit_state.add(new Unit_state(sym,unit_dict.get(name),x,y,100.0));
+                    unit_state.add(new Unit_state(sym,unit_dict.get(id),x,y,unit_dict.get(id).hit));
                     map[x][y].unit_cate=sym;
                     map[x][y].unit_id=unit_counter;
                     unit_counter++;
                 }
                 amount = amount- num*price;
+            }
+            */
+
+
+            for(Map.Entry<Character,Unit> u: unit_dict.entrySet()){
+                int unit_counter = 0;
+                int num = 0;
+                if(new String("Dark Adept").equals(u.id)){
+                    num = esti_Thug;
+                }
+                if(new String("Thug").equals(u.id)){
+                    num = esti_Thug;
+                }
+                if(!initiative){
+                    x = width - x;
+                    y = height - y;
+                }
+                while(!map[x][y].valid());
+                if(num == 0) continue;
+                String name = u.getValue().id;
+                char sym = u.getValue().sym;
+
+                unit_state.add(new Unit_state(sym,unit_dict.get(id),x,y,unit_dict.get(id).hit));
+                map[x][y].unit_cate=sym;
+                map[x][y].unit_id=unit_counter;
+                unit_counter++;
+            }
+            write_state(unit_state,workspace+"state_"+MID);
+
+            String MID = "B04505021";
+            String EID = null;
+            System.out.printf("Input the enermy's ID : ");
+            EID = scanner.next();
+
+            // check the state
+            E_state = readState(workspace+"state_"+EID);
+            move_seq = null;
+            if(valid(E_state,map,height,width)){
+                E_update(E_state,move,Coordinate); // TODO: imple
+            }
+
+            int turn_counter = 0;
+            Boolean turn = initiative;
+            Move_seq E_move = null;
+            while(turn_counter++ < 60){
+                //my turn
+                if(turn){
+                    //if all unit die break
+                    valid(unit_state,map,height,width);
+                    clear_map(map);
+                    if(all_dead(E_state)) break;
+
+
+                    turn = false;
+                }
+                // enermy turn
+                else{
+                    //if all unit die break
+                    scanner.nextLine();
+                    E_move = read_move(workspace+"move_"+EID);
+                    if(!E_move.valid(E_state,map,height,width)){
+                        System.out.printf("contain invalid move\n");
+                    }
+                    clear_map(map);
+                    if(all_dead(unit_state)) break;
+                    turn = true;
+                }
+            }
+            if(turn_counter<=60){
+                //early 
+
+                String winner = null;
+                Boolean xor = false;
+                if(2-turn_counter%2 == 1) xor =true; 
+                if(xor ^ initiative)
+                    winner = MID;
+                else
+                    winner = EID;
+                System.out.printf("Playe %d - %s win",2-turn_counter%2,winner);
+                if(initiative){
+                    System.out.printf("Playe %d - %s win",2-turn_counter%2,winner);
+                }
+            }
+            
+            // TODO : 3 method
+            else{
+                if(unit_state.count() == E_state.count()){
+                    if(unit_state.castle_count() == E_state.castle_count())
+                        if(unit_state.HP_sum() < E_state.HP_sum())
+                            winner = EID;
+                        else
+                            winner = MID;
+                    else if(unit_state.castle_count() > E_state.castle_count())
+                        winner = MID;
+                    else
+                        winner = EID;
+                }
+                else if(unit_state.count() > E_state.count())
+                    winner = MID;
+                else
+                    winner = EID;
+                System.out.printf("%s win",winner);
             }
         }
         catch(IOException e){

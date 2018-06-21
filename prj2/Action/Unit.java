@@ -34,10 +34,10 @@ public class Unit
 		this.attacks = attacks;
 	}
 
-	public static HashMap<String,Unit> getFileContent(String path, HashMap<String,Type> type_dict, HashMap<String,Movement> move_dict)throws IOException {
+	public static HashMap<Character,Unit> getFileContent(String path, HashMap<String,Type> type_dict, HashMap<String,Movement> move_dict)throws IOException {
 		FileReader fr = new FileReader(path);
 		BufferedReader br = new BufferedReader(fr);
-		HashMap<String,Unit> units = new HashMap<String,Unit>();
+		HashMap<Character,Unit> units = new HashMap<Character,Unit>();
 		char sym = 'A';
 		while (br.ready()) {
 			String string = br.readLine().trim();
@@ -75,7 +75,7 @@ public class Unit
 						attacks.add(new Attack(a_name, a_type, a_range, a_damage, a_number));
 					}
 				}
-				units.put(id,new Unit(id,sym,hit,move_type,movement,cost,attacks)); 
+				units.put(sym,new Unit(id,sym,hit,move_type,movement,cost,attacks)); 
 				sym++;
 			}
 		}

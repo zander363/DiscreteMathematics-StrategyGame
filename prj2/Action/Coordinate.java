@@ -32,7 +32,7 @@ public class Coordinate
 		return;
 	}
 	public Boolean valid(){
-		if(this.sym=='#') return false;
+		if(this.sym=='Q') return false;
 		if(this.unit_id >= 0) return false;
 		return true;
 	}
